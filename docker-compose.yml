@@ -4,8 +4,10 @@ services:
   reverse-proxy:
     image: caddy:2.7.4
     restart: unless-stopped
+    entrypoint: ["caddy", "reverse-proxy", "--from", "${DOMAIN}", "--to", "http://doh-proxy:8053"]
+    depends_on:
+      - doh-proxy
     volumes:
-      - ./config/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
     networks:
@@ -14,6 +16,8 @@ services:
   doh-proxy:
     image: satishweb/doh-server:v2.3.3-alpine
     restart: unless-stopped
+    depends_on:
+      - pihole
     environment:
       DEBUG: "0"
       UPSTREAM_DNS_SERVER: udp:${IP_pihole}:53
@@ -29,6 +33,8 @@ services:
     image: pihole/pihole:2023.05.2
     restart: unless-stopped
     entrypoint: ["sh", "-c", "sed -i 's|\"{{PASSWORD}}\"|$PIHOLE_PASSWORD|' /etc/pihole/setupVars.conf && exec /s6-init"]
+    depends_on:
+      - adguard
     environment:
       - SKIPGRAVITYONBOOT=1
       - QUERY_LOGGING=false
