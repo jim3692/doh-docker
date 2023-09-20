@@ -1,2 +1,9 @@
 /.history
 /data
+
+# Prevent git from tracking additional files from services
+/config/adguard/*
+!/config/adguard/AdGuardHome.yaml
+/config/pihole/*
+!/config/pihole/pihole-FTL.conf
+!/config/pihole/setupVars.conf
