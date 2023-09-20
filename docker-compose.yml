@@ -1,0 +1,69 @@
+version: "3.8"
+
+services:
+  reverse-proxy:
+    image: caddy:2.7.4
+    restart: unless-stopped
+    volumes:
+      - ./config/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      doh:
+
+  doh-proxy:
+    image: satishweb/doh-server:v2.3.3-alpine
+    restart: unless-stopped
+    environment:
+      DEBUG: "0"
+      UPSTREAM_DNS_SERVER: udp:${IP_pihole}:53
+      DOH_HTTP_PREFIX: /dns-query
+      DOH_SERVER_LISTEN: :8053
+      DOH_SERVER_TIMEOUT: 10
+      DOH_SERVER_TRIES: 3
+      DOH_SERVER_VERBOSE: false
+    networks:
+      doh:
+
+  pihole:
+    image: pihole/pihole:2023.05.2
+    restart: unless-stopped
+    volumes:
+      - ./data/pihole_data:/etc/pihole
+      - ./data/pihole_dnsmasq:/etc/dnsmasq.d
+    networks:
+      doh:
+        ipv4_address: ${IP_pihole}
+
+  adguard:
+    image: adguard/adguardhome:v0.107.38
+    restart: unless-stopped
+    command: ["sh", "-c", "sed -i \"s|{{PASSWORD}}|$AGUARD_PASSWORD|\" /opt/adguardhome/conf/AdGuardHome.yaml && adguard --config /opt/adguardhome/conf/AdGuardHome.yaml"]
+    environment:
+      - AGUARD_PASSWORD=${AGUARD_PASSWORD}
+    volumes:
+      - adguard_data:/opt/adguardhome/work
+      - ./config/adguard:/opt/adguardhome/conf
+    ports:
+      - 127.0.0.1:3000:80
+    networks:
+      doh:
+        ipv4_address: ${IP_adguard}
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+  pihole_data:
+  pihole_dnsmasq:
+
+  adguard_data:
+  adguard_config:
+
+networks:
+  doh:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${SUBNET}
+          gateway: ${GATEWAY}
