@@ -10,6 +10,9 @@ services:
     volumes:
       - caddy_data:/data
       - caddy_config:/config
+    ports:
+      - 80:80
+      - 443:443
     networks:
       doh:
 
@@ -26,6 +29,8 @@ services:
       DOH_SERVER_TIMEOUT: 10
       DOH_SERVER_TRIES: 3
       DOH_SERVER_VERBOSE: false
+    ports:
+      - 8053:8053
     networks:
       doh:
 
