@@ -38,9 +38,7 @@ services:
   adguard:
     image: adguard/adguardhome:v0.107.38
     restart: unless-stopped
-    command: ["sh", "-c", "sed -i \"s|{{PASSWORD}}|$AGUARD_PASSWORD|\" /opt/adguardhome/conf/AdGuardHome.yaml && adguard --config /opt/adguardhome/conf/AdGuardHome.yaml"]
-    environment:
-      - AGUARD_PASSWORD=${AGUARD_PASSWORD}
+    entrypoint: ["sh", "-c", "sed -i 's|\"{{PASSWORD}}\"|$ADGUARD_PASSWORD|' /opt/adguardhome/conf/AdGuardHome.yaml && /opt/adguardhome/AdGuardHome --config /opt/adguardhome/conf/AdGuardHome.yaml"]
     volumes:
       - adguard_data:/opt/adguardhome/work
       - ./config/adguard:/opt/adguardhome/conf
@@ -58,7 +56,6 @@ volumes:
   pihole_dnsmasq:
 
   adguard_data:
-  adguard_config:
 
 networks:
   doh:
