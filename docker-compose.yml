@@ -37,13 +37,14 @@ services:
   dot-proxy:
     image: adguard/dnsproxy:v0.54.0
     restart: unless-stopped
-    command: ["-u", "${IP_pihole}", "-l", "127.0.0.1", "--tls-port=853", "-p", "0", "--tls-crt=${TLS_CRT_dot_proxy}", "--tls-key=${TLS_KEY_dot_proxy}"]
+    command: ["-u", "${IP_pihole}", "--tls-port=853", "-p", "0", "--tls-crt=${TLS_CRT_dot_proxy}", "--tls-key=${TLS_KEY_dot_proxy}"]
     depends_on:
       - pihole
     volumes:
-      - ./config/dot-proxy:/cert
+      - ${CERTS_dot_proxy-./config/dot-proxy}:/cert
     ports:
-      - 8853:853
+      - 853:853/tcp
+      - 853:853/udp
     networks:
       doh:
 
